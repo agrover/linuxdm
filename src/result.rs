@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::{error::Error, fmt};
+use std::{error::Error, fmt, io};
 
 use crate::core::errors;
 
@@ -25,10 +25,12 @@ impl fmt::Display for ErrorEnum {
 
 /// Super error type, with constructors distinguishing outer errors from
 /// core errors.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum DmError {
     /// DM errors
     Dm(ErrorEnum, String),
+    /// IO errors
+    Io(io::Error),
     /// Errors in the core devicemapper functionality
     Core(errors::Error),
 }
@@ -42,11 +44,18 @@ impl From<errors::Error> for DmError {
     }
 }
 
+impl From<io::Error> for DmError {
+    fn from(err: io::Error) -> DmError {
+        DmError::Io(err)
+    }
+}
+
 impl fmt::Display for DmError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            DmError::Core(ref err) => write!(f, "DM Core error: {}", err),
             DmError::Dm(ref err, ref msg) => write!(f, "DM error: {}: {}", err, msg),
+            DmError::Io(ref err) => write!(f, "Io error: {}", err),
+            DmError::Core(ref err) => write!(f, "DM Core error: {}", err),
         }
     }
 }
