@@ -34,7 +34,7 @@ pub enum Mode {
 }
 
 impl fmt::Display for Mode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let val = match self {
             Mode::Direct => "D",
             Mode::Journaled => "J",
@@ -69,7 +69,7 @@ impl IntegrityTargetParams {
 }
 
 impl fmt::Display for IntegrityTargetParams {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} {}", TARGET_NAME, self.param_str())
     }
 }
@@ -153,7 +153,7 @@ impl IntegrityDevTargetTable {
 }
 
 impl fmt::Display for IntegrityDevTargetTable {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let table = &self.table;
         writeln!(f, "{} {} {}", *table.start, *table.length, table.params)
     }
@@ -454,14 +454,13 @@ mod tests {
         let int_dev_name = test_name("integrity").expect("valid format");
 
         let mut int_dev =
-            IntegrityDev::initialize(&dm, &int_dev_name, None, &paths[0], Sectors(0), true)
-                .unwrap();
+            IntegrityDev::initialize(&dm, &int_dev_name, None, paths[0], Sectors(0), true).unwrap();
         let size = int_dev.size();
 
         int_dev.teardown(&dm).unwrap();
 
         let int_dev =
-            IntegrityDev::setup(&dm, &int_dev_name, None, &paths[0], Sectors(0), size).unwrap();
+            IntegrityDev::setup(&dm, &int_dev_name, None, paths[0], Sectors(0), size).unwrap();
 
         xfs_create_fs(&int_dev.devnode()).unwrap();
 
